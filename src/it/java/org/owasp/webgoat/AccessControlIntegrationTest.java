@@ -18,6 +18,19 @@ class AccessControlIntegrationTest extends IntegrationTest {
     checkResults("/access-control");
   }
 
+  @Test
+  void sqlInjectionAdvancedChallengeHandlesQuotedUsername() {
+    startLesson("SqlInjectionAdvanced");
+
+    checkAssignmentWithPUT(
+        url("/WebGoat/SqlInjectionAdvanced/challenge"),
+        Map.of(
+            "username_reg", "o'reilly",
+            "password_reg", "password",
+            "email_reg", "someone@example.com"),
+        true);
+  }
+
   private void assignment3() {
     // direct call should fail if user has not been created
     RestAssured.given()
