@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.owasp.webgoat.container.plugins.LessonTest;
+import org.owasp.webgoat.lessons.sqlinjection.advanced.SqlInjectionAdvanced;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -36,6 +37,22 @@ public class ProfileUploadFixTest extends LessonTest {
         .andExpect(status().is(200))
         .andExpect(jsonPath("$.assignment", CoreMatchers.equalTo("ProfileUploadFix")))
         .andExpect(jsonPath("$.lessonCompleted", CoreMatchers.is(true)));
+  }
+
+  @Test
+  public void sqlLikeUsernameIsTreatedAsLiteralData() throws Exception {
+    var username = "tom' OR '1'='1";
+    Mockito.when(webSession.getCurrentLesson()).thenReturn(new SqlInjectionAdvanced());
+
+    mockMvc
+        .perform(
+            MockMvcRequestBuilders.put("/SqlInjectionAdvanced/challenge")
+                .param("username_reg", username)
+                .param("email_reg", "sql-test@example.com")
+                .param("password_reg", "password"))
+        .andExpect(status().is(200))
+        .andExpect(jsonPath("$.feedback", CoreMatchers.containsString("created")))
+        .andExpect(jsonPath("$.feedback", CoreMatchers.containsString(username)));
   }
 
   @Test
